@@ -13,11 +13,12 @@ using System.Windows.Threading;
 
 namespace Boycott.WP8
 {
-    public partial class ProductSearchPage : PhoneApplicationPage
+    public partial class SearchPage : PhoneApplicationPage
     {
         private DispatcherTimer _timer;
+        private string filterListType = "";
 
-        public ProductSearchPage()
+        public SearchPage()
         {
             InitializeComponent();
 
@@ -26,6 +27,31 @@ namespace Boycott.WP8
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(600);
             _timer.Tick += timerTicker;
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+
+            if (NavigationContext.QueryString.ContainsKey("type"))
+            {
+                string typeString = NavigationContext.QueryString["type"].ToLower();
+
+                if (!String.IsNullOrEmpty(typeString))
+                {
+                    filterListType = typeString;
+                    pageName.Text += " " + typeString;
+
+                    if (typeString == "product")
+                    {
+                        filteredProductLongListSelector.Visibility = Visibility.Visible;
+                    }
+                    else if (typeString == "business")
+                    {
+                        filteredBusinessLongListSelector.Visibility = Visibility.Visible;
+                    }
+                }
+            }
         }
 
         private void SearchPage_Loaded(object sender, System.Windows.RoutedEventArgs e)
@@ -56,7 +82,14 @@ namespace Boycott.WP8
 
             if (vm != null)
             {
-                vm.FindProduct.Execute(query);
+                if (filterListType == "product")
+                {
+                    vm.FilterProductsWithKeyword.Execute(query);
+                }
+                else if (filterListType == "business")
+                {
+                    vm.FilterBusinessesWithKeyword.Execute(query);
+                }
             }
         }
 

@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Linq;
 using Boycott.PCL.Models;
+using Boycott.PCL.Helpers;
+using Boycott.PCL.Common.Interfaces;
 
 namespace Boycott.PCL.ViewModels
 {
@@ -19,9 +21,10 @@ namespace Boycott.PCL.ViewModels
     /// </summary>
     public class MainViewModel : ViewModelBase
     {
-        private ProductDataCache _productCache = ProductDataCache.Instance;
-        private List<Category> _categories = new List<Category>();
+        private BoycottDataCache _productCache = BoycottDataCache.Instance;
         private List<Product> _products = new List<Product>();
+        private ObservableCollection<Business> _businesses = new ObservableCollection<Business>();
+        private Business _nearestBoycottedBusiness = null;
 
         #region Properties
 
@@ -35,13 +38,31 @@ namespace Boycott.PCL.ViewModels
             }
         }
 
-        public class Category
+        public Business NearestBoycottedBusiness
         {
-            public string Title { get; set; }
-            public List<Product> Products { get; set; }
+            get { return _nearestBoycottedBusiness; }
+            set
+            {
+                _nearestBoycottedBusiness = value;
+                RaisePropertyChanged(() => NearestBoycottedBusiness);
+            }
         }
 
-        public List<Category> Categories { get { return _categories; } }
+        public ObservableCollection<Business> Businesses
+        {
+            get { return _businesses; }
+            set
+            {
+                _businesses = value;
+                RaisePropertyChanged(() => Businesses);
+            }
+        }
+
+        #endregion
+
+        #region Events
+        public delegate void CheckedLocationEventDelegate();
+        public event CheckedLocationEventDelegate CheckedLocation;
 
         #endregion
 
@@ -52,11 +73,44 @@ namespace Boycott.PCL.ViewModels
         /// </summary>
         public RelayCommand LoadData { get; private set;}
 
+        /// <summary>
+        /// Check if user current location for boycotted
+        /// </summary>
+        public RelayCommand<Location> FindNearestBoycottedBusiness { get; private set; }
+
         private async void InitializeCommands()
         {
             LoadData = new RelayCommand(() =>
             {
                 _productCache.LoadCacheAsync();
+            });
+
+            FindNearestBoycottedBusiness = new RelayCommand<Location>(param =>
+            {
+                NearestBoycottedBusiness = null;
+                var location = param as Location;
+
+                if(location != null)
+                {
+                    Business nearestBusiness = null;
+
+                    foreach (var business in _businesses)
+                    {
+                        if (LocationTrackerUtils.GetDistanceBetweenPoints(location, business.Location) <= business.Radius)
+                        {
+                            nearestBusiness = business;
+                            break;
+                        }
+                    }
+
+                    if (nearestBusiness != null)
+                    {
+                        NearestBoycottedBusiness = nearestBusiness;
+                    }
+
+                    if (CheckedLocation != null)
+                        CheckedLocation();
+                }
             });
         }
 
@@ -73,7 +127,8 @@ namespace Boycott.PCL.ViewModels
             ////    // Code runs "for real"
             ////}
 
-            _productCache.Refreshed += ProductCache_Refereshed;
+            _productCache.RefreshedProducts += ProductList_Refereshed;
+            _productCache.RefreshedBusinesses += BusinessList_Refereshed;
 
             InitializeCommands();
             InitializeDataSync();
@@ -84,21 +139,19 @@ namespace Boycott.PCL.ViewModels
             await _productCache.LoadCacheAsync();
         }
 
-        void ProductCache_Refereshed()
+
+        void ProductList_Refereshed()
         {
-            var groupedCategories = _productCache.Products.GroupBy(x => x.Category)
-                .Select(x => new Category { Title = x.Key, Products = x.ToList() });
-            _categories.Clear();
-
-            foreach(var _category in groupedCategories)
-            {
-                _categories.Add(_category);
-            }
-
             Products = _productCache.Products;
-            
         }
 
-        
+        void BusinessList_Refereshed()
+        {
+            foreach (var b in _productCache.Businesses)
+            {
+                Businesses.Add(b);
+            }
+        }
+
     }
 }

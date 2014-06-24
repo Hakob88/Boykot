@@ -1,5 +1,5 @@
 ﻿<phone:PhoneApplicationPage
-    x:Class="Boycott.WP8.ProductSearchPage"
+    x:Class="Boycott.WP8.SearchPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
@@ -28,8 +28,11 @@
 
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel Grid.Row="0" Margin="12,17,0,28">
-            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}" />
-            <TextBlock Text="search" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}"/>
+            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}"
+                      Style="{StaticResource PhoneTextNormalStyle}" />
+            <Viewbox>
+                <TextBlock x:Name="pageName" Text="search" Margin="9,-7,12,0" Style="{StaticResource PhoneTextTitle1Style}"/>
+            </Viewbox>
         </StackPanel>
 
         <!--ContentPanel - place additional content here-->
@@ -39,11 +42,12 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBox x:Name="SearchTextBox" Grid.Row="0" TextChanged="SearchTextBox_TextChanged" KeyDown="SearchTextBox_KeyDown" InputScope="Search" Padding="5" />
+            <TextBox x:Name="SearchTextBox" Grid.Row="0" Padding="5" TextChanged="SearchTextBox_TextChanged" 
+                     KeyDown="SearchTextBox_KeyDown" InputScope="Search"  />
 
-                <!--grouped result list-->
-            <phone:LongListSelector x:Name="longListSelector" Grid.Row="1" Margin="12,0,0,0"
-                        ItemsSource="{Binding Results, Converter={StaticResource ListToGroupConverter}}"
+            <!--grouped filtered product list-->
+            <phone:LongListSelector x:Name="filteredProductLongListSelector" Grid.Row="1" Visibility="Collapsed" Margin="12,0,0,0"
+                        ItemsSource="{Binding FilteredProductList, Converter={StaticResource ListToGroupConverter}}"
                         IsGroupingEnabled="True" LayoutMode="List" HideEmptyGroups="False" 
                         JumpListStyle="{StaticResource CustomJumpListStyle}">
                 <phone:LongListSelector.ItemTemplate>
@@ -53,7 +57,8 @@
                                 <Border BorderThickness="0" Width="75" Height="75" Background="Transparent">
                                     <Image Source="{Binding ImageUrl}" Stretch="UniformToFill" Margin="0"/>
                                 </Border>
-                                <TextBlock Text="{Binding Name}" FontSize="30" TextTrimming="WordEllipsis" TextWrapping="NoWrap" VerticalAlignment="Center" Margin="15,0,10,3" />
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="15,0,10,3" FontSize="30" 
+                                           TextTrimming="WordEllipsis" TextWrapping="NoWrap" />
                             </StackPanel>
                         </Grid>
                     </DataTemplate>
@@ -61,11 +66,30 @@
                 <phone:LongListSelector.GroupHeaderTemplate>
                     <DataTemplate>
                         <Grid Margin="0,5,0,10" Background="{StaticResource PhoneAccentBrush}">
-                            <TextBlock Text="{Binding Title}" FontSize="35" TextTrimming="WordEllipsis" TextWrapping="NoWrap" VerticalAlignment="Center" Padding="10,5,10,7"/>
+                            <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Padding="10,5,10,7" FontSize="35" 
+                                       TextTrimming="WordEllipsis" TextWrapping="NoWrap"/>
                         </Grid>
                     </DataTemplate>
                 </phone:LongListSelector.GroupHeaderTemplate>
             </phone:LongListSelector>
+
+            <!--filtered business list-->
+            <phone:LongListSelector x:Name="filteredBusinessLongListSelector" Grid.Row="1" Visibility="Collapsed" Margin="12,0,0,0"
+                        ItemsSource="{Binding FilteredBusinessList}" IsGroupingEnabled="False" LayoutMode="List">
+                <phone:LongListSelector.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="0,0,0,7">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" Margin="15,0,10,0" VerticalAlignment="Center"
+                                           TextTrimming="WordEllipsis" TextWrapping="NoWrap" FontSize="30" />
+                                <TextBlock Text="{Binding OwnerName, StringFormat='Owner name: {0}'}" Margin="15,0,10,3" VerticalAlignment="Center"  
+                                           TextTrimming="WordEllipsis" TextWrapping="NoWrap" FontSize="26" Style="{StaticResource PhoneTextSubtleStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </phone:LongListSelector.ItemTemplate>
+            </phone:LongListSelector>
+
         </Grid>
     </Grid>
 </phone:PhoneApplicationPage>

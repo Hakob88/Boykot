@@ -8,14 +8,14 @@ using Boycott.PCL.Models;
 
 namespace Boycott.PCL
 {
-    public class ProductDataSync
+    public class BoycottDataSync
     {
         public static readonly string BaseUrl = "http://www.salamicupcake.freevar.com/";
         public static readonly Uri BootstrapUri = new Uri(BaseUrl + "products.php");
 
         private HttpClient _downloader = new HttpClient();
 
-        public ProductDataSync()
+        public BoycottDataSync()
         {
         }
 

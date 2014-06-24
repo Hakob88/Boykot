@@ -12,7 +12,9 @@
   See http://www.galasoft.ch/mvvm
 */
 
+using Boycott.PCL.Common.Interfaces;
 using Boycott.PCL.ViewModels;
+using Boycott.WP8.Common.Interfaces;
 using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.Ioc;
 using Microsoft.Practices.ServiceLocation;
@@ -46,6 +48,7 @@ namespace Boycott.WP8.ViewModels
             SimpleIoc.Default.Register<MainViewModel>();
             SimpleIoc.Default.Register<ScanViewModel>();
             SimpleIoc.Default.Register<SearchViewModel>();
+            SimpleIoc.Default.Register<ILocationTracker, LocationTracker>();
         }
 
         public MainViewModel Main

@@ -31,7 +31,7 @@ namespace Boycott.WP8
 
         private void barSearchButton_Click(object sender, EventArgs e)
         {
-            NavigationService.Navigate(new Uri("/ProductSearchPage.xaml", UriKind.Relative));
+            NavigationService.Navigate(new Uri("/SearchPage.xaml", UriKind.Relative));
         }
     }
    

@@ -1,23 +1,23 @@
-﻿using System;
+﻿using Boycott.PCL.ViewModels;
+using Boycott.WP8.Resources;
+using Microsoft.Devices;
+using Microsoft.Phone.Controls;
+using Microsoft.Phone.Shell;
+using Microsoft.Xna.Framework.Media;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Navigation;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using Boycott.WP8.Resources;
-using Microsoft.Devices;
-using ZXing;
-using System.Windows.Threading;
-using System.Windows.Media.Imaging;
 using System.Windows.Input;
-using Newtonsoft.Json.Linq;
-using System.IO;
-using Microsoft.Xna.Framework.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Threading;
 using Windows.Storage;
-using Boycott.PCL.ViewModels;
+using ZXing;
 
 namespace Boycott.WP8
 {
@@ -70,7 +70,7 @@ namespace Boycott.WP8
             _scanTimer.Interval = TimeSpan.FromMilliseconds(250);
             _scanTimer.Tick += (o, arg) => ScanForBarcode();
 
-            viewfinderCanvas.Tap += new EventHandler<GestureEventArgs>(focus_Tapped);
+            viewfinderCanvas.Tap += new EventHandler<System.Windows.Input.GestureEventArgs>(focus_Tapped);
 
             base.OnNavigatedTo(e);
         }
@@ -139,7 +139,7 @@ namespace Boycott.WP8
             }
         }
 
-        void focus_Tapped(object sender, GestureEventArgs e)
+        void focus_Tapped(object sender, System.Windows.Input.GestureEventArgs e)
         {
             if (_phoneCamera != null)
             {

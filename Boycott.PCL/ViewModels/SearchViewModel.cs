@@ -10,18 +10,29 @@ namespace Boycott.PCL.ViewModels
 {
     public class SearchViewModel : ViewModelBase
     {
-        private ProductDataCache _productCache = ProductDataCache.Instance;
-        private List<Product> _results = new List<Product>();
+        private BoycottDataCache _boycottCache = BoycottDataCache.Instance;
+        private List<Product> _filteredProductList = new List<Product>();
+        private List<Business> _filteredBusinessList = new List<Business>();
 
         #region Properties
 
-        public List<Product> Results
+        public List<Product> FilteredProductList
         {
-            get { return _results; }
+            get { return _filteredProductList; }
             set
             {
-                _results = value;
-                RaisePropertyChanged(() => Results);
+                _filteredProductList = value;
+                RaisePropertyChanged(() => FilteredProductList);
+            }
+        }
+
+        public List<Business> FilteredBusinessList
+        {
+            get { return _filteredBusinessList; }
+            set
+            {
+                _filteredBusinessList = value;
+                RaisePropertyChanged(() => FilteredBusinessList);
             }
         }
 
@@ -30,23 +41,43 @@ namespace Boycott.PCL.ViewModels
         #region Commands
 
         /// <summary>
-        /// Find product command
+        /// Filter products with keyword
         /// </summary>
-        public RelayCommand<string> FindProduct { get; private set;}
+        public RelayCommand<string> FilterProductsWithKeyword { get; private set; }
+
+        /// <summary>
+        /// Filter businesses with keyword
+        /// </summary>
+        public RelayCommand<string> FilterBusinessesWithKeyword { get; private set; }
 
         private async void InitializeCommands()
         {
-            FindProduct = new RelayCommand<string>(param =>
+            FilterProductsWithKeyword = new RelayCommand<string>(param =>
             {
-                Results.Clear();
+                FilteredProductList.Clear();
                 var result = new List<Product>();
 
                 if (!string.IsNullOrEmpty(param.Trim()))
                 {   
-                    result = _productCache.Products.FindAll(x => x.Name.ToLower().Contains(param.Trim().ToLower()));
+                    result = _boycottCache.Products.FindAll(x => x.Name.ToLower().Contains(param.Trim().ToLower()));
                 }
 
-                Results = result;
+                FilteredProductList = result;
+            });
+
+            FilterBusinessesWithKeyword = new RelayCommand<string>(param =>
+            {
+                FilteredBusinessList.Clear();
+                var result = new List<Business>();
+
+                if (!string.IsNullOrEmpty(param.Trim()))
+                {
+                    result = _boycottCache.Businesses.FindAll(x => x.Name.ToLower().Contains(param.Trim().ToLower()) ||
+                        x.OwnerName.ToLower().Contains(param.Trim().ToLower()));
+                    result = result.GroupBy(x => x.Name).Select(grp => grp.First()).ToList();
+                }
+
+                FilteredBusinessList = result;
             });
         }
 

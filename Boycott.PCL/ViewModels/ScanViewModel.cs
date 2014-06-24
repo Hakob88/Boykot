@@ -10,7 +10,7 @@ namespace Boycott.PCL.ViewModels
 {
     public class ScanViewModel : ViewModelBase
     {
-        private ProductDataCache _productCache = ProductDataCache.Instance;
+        private BoycottDataCache _productCache = BoycottDataCache.Instance;
         private DoubleResult _result = new DoubleResult() { UnderBoycott = null, NotFound = null };
 
         public class DoubleResult
