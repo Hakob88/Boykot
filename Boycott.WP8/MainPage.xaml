@@ -1,0 +1,148 @@
+﻿<phone:PhoneApplicationPage
+    x:Class="Boycott.WP8.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Primitives="clr-namespace:Microsoft.Phone.Controls.Primitives;assembly=Microsoft.Phone"
+    xmlns:Controls="clr-namespace:Microsoft.Phone.Maps.Controls;assembly=Microsoft.Phone.Maps"
+    xmlns:helpers="clr-namespace:Boycott.WP8.Helpers;assembly=Boycott.WP8"
+    xmlns:toolkit="clr-namespace:Microsoft.Phone.Maps.Toolkit;assembly=Microsoft.Phone.Controls.Toolkit"
+    DataContext="{Binding Main, Source={StaticResource Locator}}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    shell:SystemTray.IsVisible="True"
+    mc:Ignorable="d">
+
+    <phone:PhoneApplicationPage.Resources>
+        <helpers:ListToGroupConverter x:Key="ListToGroupConverter" />
+        <helpers:LocationToGeoCoordinateConverter x:Key="LocationToGeoCoordinateConverter" />
+        <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+
+        <!--separate AppBars for each PivotItem-->
+        <shell:ApplicationBar x:Key="ProductListAppBar" IsVisible="True" IsMenuEnabled="False" Mode="Default">
+            <shell:ApplicationBarIconButton x:Name="ProductSearchButton" IconUri="/Assets/AppBar/feature.search.png" Text="search" Click="AppBarSearchButton_Click"/>
+            <shell:ApplicationBarIconButton x:Name="ScanButton" IconUri="/Assets/AppBar/feature.camera.png" Text="scan" Click="AppBarScanButton_Click"/>
+        </shell:ApplicationBar>
+        <shell:ApplicationBar x:Key="BusinessMapAppBar" IsVisible="True" IsMenuEnabled="False" Mode="Default">
+            <shell:ApplicationBarIconButton x:Name="BusinessSearchButton" IconUri="/Assets/AppBar/feature.search.png" Text="search" Click="AppBarSearchButton_Click"/>
+        </shell:ApplicationBar>
+
+    </phone:PhoneApplicationPage.Resources>
+
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- LOCALIZATION NOTE:
+            To localize the displayed strings copy their values to appropriately named
+            keys in the app's neutral language resource file (AppResources.resx) then
+            replace the hard-coded text value between the attributes' quotation marks
+            with the binding clause whose path points to that string name.
+
+            For example:
+
+                Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}"
+
+            This binding points to the template's string resource named "ApplicationTitle".
+         -->
+
+        <!--TitlePanel contains the name of the application and page title-->
+        <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,28">
+            <TextBlock Text="{Binding Path=LocalizedResources.ApplicationTitle, Source={StaticResource LocalizedStrings}}" Style="{StaticResource PhoneTextNormalStyle}" Margin="12,0"/>
+        </StackPanel>
+
+        <phone:Pivot Grid.Row="1" x:Name="MainPivot" Margin="0,-35,0,0" Style="{StaticResource CustomPivotStyle}" SelectionChanged="MainPivot_SelectionChanged">
+            <phone:PivotItem x:Name="ProductsPivotItem" Header="products">
+                <!--grouped product list-->
+                <phone:LongListSelector x:Name="longListSelector" Margin="12,0,0,0"
+                    ItemsSource="{Binding Products, Converter={StaticResource ListToGroupConverter}}"
+                    IsGroupingEnabled="True" LayoutMode="List" HideEmptyGroups="False" 
+                    JumpListStyle="{StaticResource CustomJumpListStyle}">
+                    <phone:LongListSelector.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,5">
+                                <StackPanel Orientation="Horizontal">
+                                    <Border BorderThickness="0" Width="75" Height="75" Background="Transparent">
+                                        <Image Source="{Binding ImageUrl}" Stretch="UniformToFill" Margin="0"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding Name}" FontSize="30" TextTrimming="WordEllipsis" TextWrapping="NoWrap" VerticalAlignment="Center" Margin="15,0,10,3" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </phone:LongListSelector.ItemTemplate>
+                    <phone:LongListSelector.GroupHeaderTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,5,0,10" Background="{StaticResource PhoneAccentBrush}">
+                                <TextBlock Text="{Binding Title}" FontSize="35" TextTrimming="WordEllipsis" TextWrapping="NoWrap" VerticalAlignment="Center" Padding="10,5,10,7"/>
+                            </Grid>
+                        </DataTemplate>
+                    </phone:LongListSelector.GroupHeaderTemplate>
+                </phone:LongListSelector>
+            </phone:PivotItem>
+            <phone:PivotItem x:Name="BusinessesPivotItem" Header="businesses">
+                <Grid x:Name="mapView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Button Grid.Row="0" Name="checkBoycotted" Content="Check my location" VerticalAlignment="Top" Click="checkBoycotted_Click" />
+                    <Controls:Map Grid.Row="1" Name="map" Margin="0,3,0,0" Center="40.180624, 44.514256" 
+                            ZoomLevel="14" PedestrianFeaturesEnabled="True" LandmarksEnabled="True" Tap="map_Tap"
+                            helpers:MapPushpinDependency.ItemsSource="{Binding Path=Businesses, Mode=TwoWay}" >
+                        <toolkit:MapExtensions.Children>
+                            <toolkit:MapItemsControl>
+                                <toolkit:MapItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <toolkit:Pushpin Name="mapPushpin" GeoCoordinate="{Binding Location, Converter={StaticResource LocationToGeoCoordinateConverter}}"
+                                                Background="{StaticResource PhoneAccentBrush}" Tag="{Binding}" Tap="mapPushpin_Tap">
+                                        </toolkit:Pushpin>
+                                    </DataTemplate>
+                                </toolkit:MapItemsControl.ItemTemplate>
+                            </toolkit:MapItemsControl>
+
+                            <!--infoPushpin for showing selected pin content, to avoid overlapping -->
+                            <toolkit:Pushpin Name="infoPushpin" GeoCoordinate="{Binding Location, Converter={StaticResource LocationToGeoCoordinateConverter}}"
+                                              Visibility="Collapsed" Background="{StaticResource PhoneAccentBrush}" Tap="infoPushpin_Tap">
+                                <toolkit:Pushpin.Content>
+                                    <Grid x:Name="pushpinContent" Background="White" Width="300" Visibility="Visible" HorizontalAlignment="Center" >
+                                        <StackPanel Margin="0,5,0,5" >
+                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" Style="{StaticResource PushpinContentFontStyle}" />
+                                            <TextBlock Text="{Binding OwnerName, StringFormat='Owner: {0}'}" Style="{StaticResource PushpinContentFontStyle}" />
+                                            <TextBlock Text="{Binding Address}" TextWrapping="Wrap" Style="{StaticResource PushpinContentFontStyle}" />
+                                        </StackPanel>
+                                    </Grid>
+                                </toolkit:Pushpin.Content>
+                            </toolkit:Pushpin>
+
+                        </toolkit:MapExtensions.Children>
+                    </Controls:Map>
+
+                    <Grid Grid.Row="1" x:Name="underBoycottPopup" Visibility="Collapsed">
+                        <Border  BorderThickness="2" Margin="10" BorderBrush="White" VerticalAlignment="Top" HorizontalAlignment="Center">
+                            <StackPanel Background="{StaticResource PhoneAccentBrush}">
+                                <TextBlock x:Name="boycottedLabel" Text="You are nearby boycotted " TextAlignment="Center" FontSize="35" Margin="10,15,10,0"
+                                           Visibility="Collapsed" />
+                                <TextBlock x:Name="notBoycottedLabel" Text="You are not nearby a&#x0a;boycotted place" TextAlignment="Center" FontSize="35" Margin="20,15,20,0" 
+                                           Visibility="Collapsed" />
+                                <TextBlock Text="{Binding NearestBoycottedBusiness.Name}" TextAlignment="Center" TextWrapping="Wrap" FontSize="35" Margin="10,0"
+                                           Visibility="{Binding NearestBoycottedBusiness, Converter={StaticResource NullToVisibilityConverter}}" />
+                                <Button x:Name="okButton" Content="Ok" Width="215" Margin="0,10" Click="okButton_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                </Grid>
+                
+            </phone:PivotItem>
+        </phone:Pivot>
+        
+    </Grid>
+    
+</phone:PhoneApplicationPage>
