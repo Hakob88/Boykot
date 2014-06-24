@@ -1,0 +1,81 @@
+﻿<phone:PhoneApplicationPage
+    x:Class="Boycott.WP8.BarcodeReaderPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    DataContext="{Binding Scan, Source={StaticResource Locator}}"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    Foreground="{StaticResource PhoneForegroundBrush}"
+    SupportedOrientations="Portrait" Orientation="Portrait"
+    mc:Ignorable="d"
+    shell:SystemTray.IsVisible="True">
+
+    <!--LayoutRoot is the root grid where all page content is placed-->
+    <Grid>
+        <Grid x:Name="LayoutRoot" Background="Transparent">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="100" />
+            </Grid.RowDefinitions>
+            <Canvas x:Name="viewfinderCanvas">
+
+                <!--Camera viewfinder -->
+                <Canvas.Background>
+
+                    <VideoBrush x:Name="viewfinderBrush">
+                        <VideoBrush.RelativeTransform>
+                            <CompositeTransform
+                                x:Name="viewfinderTransform"
+                                CenterX="0.5"
+                                CenterY="0.5"
+                                Rotation="90"/>
+                        </VideoBrush.RelativeTransform>
+                    </VideoBrush>
+                </Canvas.Background>
+                <TextBlock 
+                    x:Name="focusBrackets" 
+                    Text="[   ]" 
+                    FontSize="40"
+                    Visibility="Collapsed"/>
+            </Canvas>
+            <!--Used for debugging-->
+            <Grid Grid.Row="1">
+                <StackPanel Margin="20, 0">
+                    <TextBlock x:Name="tbBarcodeType" FontWeight="ExtraBold" />
+                    <TextBlock x:Name="tbBarcodeData" FontWeight="ExtraBold" TextWrapping="Wrap" />
+                </StackPanel>
+                <TextBlock x:Name="textBlockCapture" Visibility="Collapsed" Text="Tap on screen to capture and send the image" FontWeight="ExtraBold" TextWrapping="Wrap" />
+            </Grid>
+
+        </Grid>
+
+        <Popup x:Name="notFoundPopup" IsOpen="{Binding Result.NotFound}">
+            <Border  BorderThickness="2" Margin="10" BorderBrush="White" VerticalAlignment="Top" HorizontalAlignment="left">
+                <StackPanel Background="{StaticResource PhoneAccentBrush}">
+                    <TextBlock Text="Barcode not found" TextAlignment="Center" FontSize="40" Margin="10,15,10,5" />
+                    <TextBlock Text="Do you want to add it to list?" TextAlignment="Center" FontSize="28" Margin="10,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,10">
+                        <Button x:Name="yesButton" Content="Yes" Width="215" Click="yesButton_Click"/>
+                        <Button x:Name="noButton" Content="No" Width="215" Click="noButton_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <Popup x:Name="underBoycottPopup" IsOpen="{Binding Result.UnderBoycott}">
+            <Border  BorderThickness="2" Margin="10" BorderBrush="White" VerticalAlignment="Top" HorizontalAlignment="left">
+                <StackPanel Background="{StaticResource PhoneAccentBrush}">
+                    <TextBlock Text="Product is under boycott!!!" TextAlignment="Center" FontSize="35" Margin="10,15,10,5" />
+                    <TextBlock Text="Please, don't buy it!" TextAlignment="Center" FontSize="30" Margin="10,0" />
+                    <Button x:Name="okButton" Content="Ok" Width="215" Margin="0,10" Click="okButton_Click"/>
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+
+
+</phone:PhoneApplicationPage>
